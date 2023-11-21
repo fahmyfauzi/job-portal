@@ -1,5 +1,10 @@
-//import express
-const express = require("express");
+//imports
+import express from "express";
+import dotenv from "dotenv";
+import colors from "colors";
+
+//dotenv config
+dotenv.config();
 
 //rest object
 const app = express();
@@ -10,7 +15,10 @@ app.get("/", (req, res) => {
 });
 
 //listen
-const port = 3000;
-app.listen(port, () => {
-  console.log(`Node server Running on http://localhost:${port}`);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(
+    `Node server Running in ${process.env.DEV_MODE} on http://localhost:${PORT}`
+      .bgCyan.white
+  );
 });
