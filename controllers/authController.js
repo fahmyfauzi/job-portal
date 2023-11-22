@@ -1,25 +1,16 @@
 import User from "../models/userModel.js";
-const registerController = async (req, res) => {
+const registerController = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
     //validate
     if (!name) {
-      return res.status(400).send({
-        success: false,
-        message: "pleasse provide name",
-      });
+      next("Name is require");
     }
     if (!email) {
-      return res.status(400).send({
-        success: false,
-        message: "pleasse provide email",
-      });
+      next("Email is require");
     }
     if (!password) {
-      return res.status(400).send({
-        success: false,
-        message: "pleasse provide name",
-      });
+      next("Password is require");
     }
 
     // if exists user
@@ -39,12 +30,7 @@ const registerController = async (req, res) => {
       user,
     });
   } catch (error) {
-    console.log(error);
-    res.status(400).send({
-      message: "Error in register controller",
-      success: false,
-      error,
-    });
+    next(error);
   }
 };
 
