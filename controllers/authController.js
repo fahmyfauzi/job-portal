@@ -40,4 +40,33 @@ const registerController = async (req, res, next) => {
   });
 };
 
-export default registerController;
+const loginController = async (req, res, next) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    next("Please Provide All Fields");
+  }
+
+  //find user
+  const user = await User.findOne({ email }).select("+password");
+  if (!user) {
+    next("Invalid username or password");
+  }
+
+  //compare password
+  const isMatch = await user.comparePassword(password);
+  if (!isMatch) {
+    next("Invalid username or password");
+  }
+  //ini digunakan untuk menghilangkan bidang password dari objek pengguna.
+  user.password = undefined;
+
+  //response
+  const token = user.createJWT();
+  res.status(200).json({
+    success: true,
+    message: "Login Successfully",
+    user,
+    token,
+  });
+};
+export { registerController, loginController };
