@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Job from "../models/jobModel.js";
+import moment from "moment";
 // create job
 const createJobController = async (req, res, next) => {
   // Ambil data perusahaan dan posisi dari permintaan body
@@ -83,9 +84,83 @@ const deleteJobController = async (req, res, next) => {
   await Job.deleteOne();
   res.status(200).json({ message: "Success, job deleted!" });
 };
+
+//stats and filter
+const jobStatesController = async (req, res, next) => {
+  // Ambil statistik pekerjaan berdasarkan status
+  const stats = await Job.aggregate([
+    //search by user
+    {
+      $match: {
+        createdBy: new mongoose.Types.ObjectId(req.user.userId),
+      },
+    },
+    {
+      $group: {
+        _id: "$status",
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  // Statistik default untuk status yang mungkin tidak ada dalam hasil pencarian
+  const defaultStats = {
+    pending: stats.find((stat) => stat._id === "pending")?.count || 0,
+    reject: stats.find((stat) => stat._id === "reject")?.count || 0,
+    interview: stats.find((stat) => stat._id === "interview")?.count || 0,
+  };
+
+  // Ambil statistik aplikasi bulanan
+  let monthlyApplication = await Job.aggregate([
+    {
+      $match: {
+        createdBy: new mongoose.Types.ObjectId(req.user.userId),
+      },
+    },
+    {
+      $group: {
+        _id: {
+          year: {
+            $year: "$createdAt",
+          },
+          month: {
+            $month: "$createdAt",
+          },
+        },
+        count: {
+          $sum: 1,
+        },
+      },
+    },
+  ]);
+
+  // Ubah format statistik aplikasi bulanan
+  monthlyApplication = monthlyApplication
+    .map((item) => {
+      const {
+        _id: { year, month },
+        count,
+      } = item;
+      // Format tanggal ke dalam "MMM Y" (Jan 2022)
+      const date = moment()
+        .month(month - 1)
+        .year(year)
+        .format("MMM Y");
+      return { date, count };
+    })
+    .reverse(); // Balik urutan bulan
+
+  res.status(200).json({
+    totalJobs: stats.length,
+    stats,
+    defaultStats,
+    monthlyApplication,
+  });
+};
 export {
   createJobController,
   getJobsControoler,
   updateJobController,
   deleteJobController,
+  jobStatesController,
 };

@@ -8,6 +8,7 @@ import {
   getJobsControoler,
   updateJobController,
   deleteJobController,
+  jobStatesController,
 } from "../controllers/jobController.js";
 
 //object route
@@ -24,4 +25,7 @@ router.patch("/update-job/:id", userAuth, updateJobController);
 
 //delete job
 router.delete("/delete-job/:id", userAuth, deleteJobController);
+
+//stats
+router.get("/job-stats", userAuth, jobStatesController);
 export default router;
