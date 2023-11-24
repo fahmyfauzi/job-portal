@@ -6,6 +6,11 @@ import colors from "colors";
 import cors from "cors";
 import morgan from "morgan";
 
+//security packages
+import helmet from "helmet";
+import xss from "xss-clean";
+import mongoSanitize from "express-mongo-sanitize";
+
 //imports file
 import connectDB from "./config/db.js";
 import testRoutes from "./routes/testRoute.js";
@@ -22,6 +27,11 @@ connectDB();
 
 //rest object
 const app = express();
+
+//security middleware
+app.use(helmet());
+app.use(xss());
+app.use(mongoSanitize());
 
 //middleware
 app.use(express.json());
