@@ -24,7 +24,45 @@ const createJobController = async (req, res, next) => {
 //get job
 const getJobsControoler = async (req, res, next) => {
   // Ambil pekerjaan yang dimiliki oleh pengguna dengan ID yang terotentikasi
-  const jobs = await Job.find({ createdBy: req.user.userId });
+  // const jobs = await Job.find({ createdBy: req.user.userId });
+
+  // Deklarasi variabel yang menyimpan query parameters dari request
+  const { status, workType, search, sort } = req.query;
+
+  // Objek query awal dengan createdBy dari pengguna terotentikasi
+  const queryObject = {
+    createdBy: req.user.userId,
+  };
+  //logic filter
+  if (status && status !== "all") {
+    queryObject.status = status;
+  }
+
+  if (workType && workType !== "all") {
+    queryObject.workType = workType;
+  }
+  if (search) {
+    queryObject.position = {
+      $regex: search,
+      $options: "i",
+    };
+  }
+  let queryResult = Job.find(queryObject);
+  //sorting
+  if (sort == "latest") {
+    queryResult = queryResult.sort("-createdAt");
+  }
+  if (sort == "oldest") {
+    queryResult = queryResult.sort("createdAt");
+  }
+  if (sort == "a-z") {
+    queryResult = queryResult.sort("position");
+  }
+  if (sort == "z-a") {
+    queryResult = queryResult.sort("-position");
+  }
+  // Eksekusi query dan simpan hasilnya dalam variabel jobs
+  const jobs = await queryResult;
 
   //response
   res.status(200).json({
