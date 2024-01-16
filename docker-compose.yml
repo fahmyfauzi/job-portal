@@ -1,0 +1,28 @@
+version: "3.9"
+
+services:
+  #mongodb service
+  mongo_db:
+    container_name: db_container
+    image: mongo:latest
+    restart: always
+    volumes:
+      - mongo_data:/data/db
+  #node api service
+  api:
+    build: .
+    ports:
+      #local -> docker
+      - 1111:3000
+      - 2222:3000
+
+    environment:
+      PORT: 3000
+      DEV_MODE: development
+      MONGO_URL: mongodb://mongo_db:27017/jobportal
+      JWT_SECRET: qwerty@123
+    depends_on:
+      - mongo_db
+
+volumes:
+  mongo_data: {}
